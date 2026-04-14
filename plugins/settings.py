@@ -11,6 +11,7 @@ import random
 from shared_client import client as gf
 from config import OWNER_ID, CHANNEL_LINK, SUPPORT_LINK
 from utils.func import get_user_data_key, save_user_data, users_collection
+from utils.encrypt import ecs, dcs
 
 VIDEO_EXTENSIONS = {
     'mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm',
@@ -97,14 +98,22 @@ __👉 **Note:** if you are using custom bot then your bot should be admin that 
         action = callback_actions[event.data]
         await start_conversation(event, user_id, action['type'], action['message'])
     elif event.data == b'logout':
+        try:
+            from plugins.batch import UC
+            client = UC.pop(user_id, None)
+            if client:
+                await client.stop()
+        except Exception as e:
+            print(f"Error stopping client: {e}")
+            
         result = await users_collection.update_one(
             {'user_id': user_id},
             {'$unset': {'session_string': ''}}
         )
         if result.modified_count > 0:
-            await event.respond('Logged out and deleted session successfully.')
+            await event.respond('✅ Logged out and session deleted successfully!')
         else:
-            await event.respond('You are not logged in.')
+            await event.respond('⚠️ You are not logged in.')
     elif event.data == b'reset':
         try:
             await users_collection.update_one(
@@ -205,8 +214,9 @@ async def handle_setreplacement(event, user_id):
 
 async def handle_addsession(event, user_id):
     session_string = event.text.strip()
-    await save_user_data(user_id, 'session_string', session_string)
-    await event.respond('✅ Session string added successfully!')
+    encrypted_session = ecs(session_string)
+    await save_user_data(user_id, 'session_string', encrypted_session)
+    await event.respond('✅ Session string added and encrypted successfully!')
 
 async def handle_deleteword(event, user_id):
     words_to_delete = event.message.text.split()

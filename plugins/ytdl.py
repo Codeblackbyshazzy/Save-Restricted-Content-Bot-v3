@@ -465,26 +465,26 @@ async def split_and_upload_file(app, sender, file_path, caption):
             edit = await app.send_message(sender, f"⬆️ Uploading part {part_number + 1}...")
             part_caption = f"{caption} \n\n**Part : {part_number + 1}**"
             await app.send_document(sender, document=part_file, caption=part_caption,
-                progress=progress_bar,
+                progress=pyro_progress,
                 progress_args=("╭─────────────────────╮\n│      **__Pyro Uploader__**\n├─────────────────────", edit, time.time())
             )
             await edit.delete()
             os.remove(part_file)
- 
+
             part_number += 1
- 
+
     await start.delete()
     os.remove(file_path)
- 
- 
-PROGRESS_BAR = """
+
+
+PROGRESS_BAR_STR = """
 │ **__Completed:__** {1}/{2}
-│ **__Bytes:__** {0}%
+│ **__Percentage:__** {0}%
 │ **__Speed:__** {3}/s
 │ **__ETA:__** {4}
 ╰─────────────────────╯
 """
- 
+
 async def get_seconds(time_string: str) -> int:
     """
     Converts a time string (e.g., '5min', '2hour') into seconds.
@@ -505,28 +505,28 @@ async def get_seconds(time_string: str) -> int:
     }
     
     return value * time_units.get(unit, 0)
- 
-async def progress_bar(current: int, total: int, ud_type: str, message, start: float):
+
+async def pyro_progress(current: int, total: int, ud_type: str, message, start: float):
     """
     Updates the progress bar for an ongoing process.
     """
     now = time.time()
     diff = now - start
     
-    if round(diff % 10) == 0 or current == total:
+    if round(diff % 5) == 0 or current == total:
         percentage = (current * 100) / total
         speed = current / diff if diff else 0
         elapsed_time = round(diff * 1000)
         time_to_completion = round((total - current) / speed) * 1000 if speed else 0
         estimated_total_time = elapsed_time + time_to_completion
- 
+
         elapsed_time_str = TimeFormatter(elapsed_time)
         estimated_total_time_str = TimeFormatter(estimated_total_time)
- 
+
         progress = "".join(["♦" for _ in range(math.floor(percentage / 10))]) + \
                    "".join(["◇" for _ in range(10 - math.floor(percentage / 10))])
         
-        progress_text = progress + PROGRESS_BAR.format(
+        progress_text = progress + PROGRESS_BAR_STR.format(
             round(percentage, 2),
             humanbytes(current),
             humanbytes(total),
@@ -537,7 +537,7 @@ async def progress_bar(current: int, total: int, ud_type: str, message, start: f
             await message.edit(text=f"{ud_type}\n│ {progress_text}")
         except:
             pass
- 
+
 def humanbytes(size: int) -> str:
     """
     Converts bytes into a human-readable format.
