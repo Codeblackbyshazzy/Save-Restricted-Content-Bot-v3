@@ -7,7 +7,7 @@ from shared_client import app
 from pyrogram.types import InlineKeyboardButton as B, InlineKeyboardMarkup as M, LabeledPrice as P, PreCheckoutQuery as Q
 from datetime import timedelta as T
 from utils.func import add_premium_user as apu
-from config import P0
+from config import P0, OWNER_ID
 
 @app.on_message(f.command("pay") & f.private)
 async def p(c, m):

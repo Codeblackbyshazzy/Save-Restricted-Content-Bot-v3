@@ -6,7 +6,31 @@ from shared_client import app
 from pyrogram import filters
 from pyrogram.errors import UserNotParticipant
 from pyrogram.types import BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
-from config import LOG_GROUP, OWNER_ID, FORCE_SUB, ADMIN_CONTACT, JOIN_LINK, BOT_NAME, START_PIC, SUPPORT_LINK, CHANNEL_LINK
+from config import LOG_GROUP, OWNER_ID, FORCE_SUB, ADMIN_CONTACT, JOIN_LINK, BOT_NAME, START_PIC, SUPPORT_LINK, CHANNEL_LINK, BRAND_NAME
+
+@app.on_message(filters.command("start") & filters.private)
+async def start_handler(client, message):
+    subscription_status = await subscribe(client, message)
+    if subscription_status == 1:
+        return
+
+    start_text = (
+        f"Hi 👋 Welcome to **{BRAND_NAME}**\n\n"
+        "✅ I can save posts from channels or groups where forwarding is off. I can download videos/audio from YT, INSTA, and other social platforms.\n"
+        "✅ Simply send the post link of a public channel. For private channels, use /login.\n"
+        "✅ Send /help to know more about my features."
+    )
+    
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Join Channel", url=CHANNEL_LINK)],
+        [InlineKeyboardButton("Get Premium", url=SUPPORT_LINK)]
+    ])
+
+    await message.reply_photo(
+        photo=START_PIC,
+        caption=start_text,
+        reply_markup=kb
+    )
 
 async def subscribe(app, message):
     if FORCE_SUB:
