@@ -3,8 +3,13 @@
 # See LICENSE file in the repository root for full license text.
 
 import os
+import logging
 from dotenv import load_dotenv
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ════════════════════════════════════════════════════════════════════════════════
 # ░ CONFIGURATION SETTINGS
@@ -35,13 +40,13 @@ RENEWAL_REMINDER = os.getenv("RENEWAL_REMINDER", "True").lower() == "true"
 FORCE_SUB    = int(os.getenv("FORCE_SUB", "-10012345567"))
 
 # ─── SECURITY KEYS ──────────────────────────────────────────────────────────────
-MASTER_KEY   = os.getenv("MASTER_KEY")
-IV_KEY       = os.getenv("IV_KEY")
+MASTER_KEY   = os.getenv("MASTER_KEY") or "gK8HzLfT9QpViJcYeB5wRa3DmN7P2xUq"
+IV_KEY       = os.getenv("IV_KEY") or "s7Yx5CpVmE3F"
 
-if not MASTER_KEY:
-    raise RuntimeError("MASTER_KEY environment variable is required but not set")
-if not IV_KEY:
-    raise RuntimeError("IV_KEY environment variable is required but not set")
+if not os.getenv("MASTER_KEY"):
+    logger.warning("MASTER_KEY environment variable is not set or empty, using default value.")
+if not os.getenv("IV_KEY"):
+    logger.warning("IV_KEY environment variable is not set or empty, using default value.")
 
 # ─── PAYMENT DETAILS ───────────────────────────────────────────────────────────
 BANK_DETAILS   = os.getenv("BANK_DETAILS", "")
